@@ -1,15 +1,19 @@
 import { Request, Response } from 'express';
 import {
   abortLaunch,
-  addNewLaunch,
+  scheduleNewLaunch,
   getAllLaunches,
+  launchExist,
 } from '../../models/launches.model';
+import { getPagination } from '../../services/query.service';
 
-export function httpGetAllLaunches(_req: Request, res: Response) {
-  return res.status(200).json(getAllLaunches());
+export async function httpGetAllLaunches(req: Request, res: Response) {
+  const { skip, limit } = getPagination(req.query);
+  const launches = await getAllLaunches(skip, limit);
+  return res.status(200).json(launches);
 }
 
-export function httpAddNewLaunch(req: Request, res: Response) {
+export async function httpAddNewLaunch(req: Request, res: Response) {
   const launch = req.body;
 
   if (
@@ -27,18 +31,32 @@ export function httpAddNewLaunch(req: Request, res: Response) {
     return res.status(400).json({ error: 'Invalid launch date' });
   }
 
-  const savedLaunch = addNewLaunch(launch);
-  return res.status(201).json(savedLaunch);
+  try {
+    await scheduleNewLaunch(launch);
+    Object.assign(launch, { target: launch.target.keplerName });
+    return res.status(201).json(launch);
+  } catch (err) {
+    return res
+      .status(500)
+      .json({ error: `Error on scheduling new launch: ${err}` });
+  }
 }
 
-export function httpAbortLaunch(req: Request, res: Response) {
+export async function httpAbortLaunch(req: Request, res: Response) {
   const { id } = req.params;
 
-  const flight = abortLaunch(+id);
+  try {
+    if (!(await launchExist(+id))) {
+      return res.status(400).json({ error: 'Launch not found' });
+    }
 
-  if (flight) {
-    res.status(200).json(flight);
-  } else {
-    return res.status(400).json({ error: 'Launch not found' });
+    const aborted = await abortLaunch(+id);
+    if (aborted) {
+      return res.status(200).json({ ok: true });
+    } else {
+      return res.status(500).json({ error: 'Launch not aborted' });
+    }
+  } catch (err) {
+    return res.status(500).json({ error: `Internal server error: ${err}` });
   }
 }

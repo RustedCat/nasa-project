@@ -4,8 +4,7 @@ import express, { Request, Response } from 'express';
 import cors from 'cors';
 import morgan from 'morgan';
 
-import planetsRouter from './routes/planets/planets.router';
-import launchesRouter from './routes/launches/launches.router';
+import { api } from './routes/api';
 
 export const app = express();
 
@@ -21,9 +20,8 @@ app.use(morgan('combined'));
 app.use(express.json());
 // serve static files
 app.use(express.static(path.join(__dirname, '..', 'public')));
-// -- routes
-app.use('/planets', planetsRouter);
-app.use('/launches', launchesRouter);
+
+app.use('/v1', api);
 
 app.get('/*', (_: Request, res: Response) => {
   res.sendFile(path.join(__dirname, '..', 'public', 'index.html'));

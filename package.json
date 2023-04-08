@@ -12,8 +12,12 @@
     "dev:start": "concurrently --kill-others \"npm run dev:server\" \"npm run dev:client\"",
     "build:client": "npm run build --prefix client",
     "build:server": "npm run build --prefix server",
-    "deploy": "npm run build:client && npm run build:server && npm start",
-    "start": "npm run start --prefix server"
+    "build": "npm run build:client && npm run build:server",
+    "deploy": "npm run build && npm start",
+    "deploy:cluster": "npm run build && npm run start:cluster",
+    "reload:cluster": "npm run cluster:reload --prefix server",
+    "start": "npm run start --prefix server",
+    "start:cluster": "npm run cluster --prefix server"
   },
   "keywords": [],
   "author": "",

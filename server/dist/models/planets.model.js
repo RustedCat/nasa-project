@@ -7,7 +7,7 @@ exports.getAllPlanets = exports.loadPlanetsData = void 0;
 const csv_parse_1 = require("csv-parse");
 const fs_1 = require("fs");
 const path_1 = __importDefault(require("path"));
-const habitablePlanets = [];
+const planets_mongo_1 = require("./planets.mongo");
 function isHabitablePlanet(planet) {
     return (planet['koi_disposition'] === 'CONFIRMED' &&
         planet['koi_insol'] > 0.36 &&
@@ -23,22 +23,32 @@ async function loadPlanetsData() {
             comment: '#',
             columns: true,
         }))
-            .on('data', (data) => {
-            if (isHabitablePlanet(data)) {
-                habitablePlanets.push(data);
-            }
+            .on('data', async (data) => {
+            savePlanet(data);
         })
             .on('error', (err) => {
             console.error(err);
             reject(err);
         })
-            .on('end', () => {
+            .on('end', async () => {
+            console.log(`${(await planets_mongo_1.Planet.find({})).length} Habitable found!`);
             resolve();
         });
     });
 }
 exports.loadPlanetsData = loadPlanetsData;
-function getAllPlanets() {
-    return habitablePlanets;
+async function savePlanet(planet) {
+    try {
+        if (isHabitablePlanet(planet)) {
+            const update = { keplerName: planet.kepler_name };
+            await planets_mongo_1.Planet.findOneAndUpdate(update, update, { upsert: true });
+        }
+    }
+    catch (err) {
+        console.error(`Could not save the planet ${err}`);
+    }
+}
+async function getAllPlanets() {
+    return await planets_mongo_1.Planet.find({}, { _id: 0, __v: 0 });
 }
 exports.getAllPlanets = getAllPlanets;

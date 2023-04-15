@@ -13,7 +13,7 @@ jobs:
     strategy:
       matrix:
         mongodb-version: ['6.0']
-    runs-on: debian-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2

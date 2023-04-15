@@ -2,10 +2,12 @@ import { describe, expect, test } from '@jest/globals';
 import request from 'supertest';
 import { app } from '../../app';
 import { mongoConnect, mongoDisconnect } from '../../services/mongo.service';
+import { loadPlanetsData } from '../../models/planets.model';
 
 describe('Launches API', () => {
   beforeAll(async () => {
     await mongoConnect();
+    await loadPlanetsData();
   });
 
   afterAll(async () => {

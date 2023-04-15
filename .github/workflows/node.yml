@@ -1,13 +1,15 @@
 name: NASA Project CI
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 jobs:
   build:
     env:
       CI: true
+      PORT: ${{ secrets.PORT }}
+      MONGO_URL: ${{ secrets.MONGO_URL }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
@@ -16,6 +18,4 @@ jobs:
           node-version: '18.x'
       - run: npm install
       - run: npm run build
-      - run: npm run test 
-      
-      
+      - run: npm run test

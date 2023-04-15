@@ -9,13 +9,20 @@ jobs:
     env:
       CI: true
       PORT: ${{ secrets.PORT }}
-      MONGO_URL: ${{ secrets.MONGO_URL }}
-    runs-on: ubuntu-latest
+      MONGO_URL: mongodb://localhost/nasa
+    strategy:
+      matrix:
+        mongodb-version: ['6.0']
+    runs-on: debian-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-node@v2
         with:
           node-version: '18.x'
+      - name: MongoDB in GitHub Actions
+        uses: supercharge/mongodb-github-action@1.9.0
+        with:
+          mongodb-version: ${{ matrix.mongodb-version }}
       - run: npm install
       - run: npm run build
       - run: npm run test:server
